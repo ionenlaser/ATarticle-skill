@@ -10,10 +10,12 @@ description: >-
   group online via its name and linked websites, and produces referenced
   MediaWiki markup with the {{DynamicInfobox|qid=...}} and {{AIGenerated}}
   templates, interwiki links to English Wikipedia for generic topics, and local
-  links for amateur-theatre topics. Trigger even when the user does not name the
-  templates. Do NOT use for general Wikidata reconciliation or authority-file
-  lookups (normdata-search) or for the Baroque ceiling-painting corpus
-  (deckenmalerei-lab).
+  links for amateur-theatre topics. It can also propose Wikidata enrichment
+  statements (inception, alternative names as aliases, social-media profiles) with
+  references, output as a QuickStatements V1 batch URL. Trigger even when the user
+  does not name the templates. Do NOT use for general Wikidata reconciliation or
+  authority-file lookups (normdata-search) or for the Baroque ceiling-painting
+  corpus (deckenmalerei-lab).
 ---
 
 # Amateur Theatre Wiki article from a Wikidata QID
@@ -28,8 +30,9 @@ to read the item just enough to know *what the group is called* and *where to go
 looking*, then write the prose, the context, and the citations that Wikidata and
 the infobox cannot supply on their own.
 
-Work in four steps. Read `references/wikidata.md` before step 1 and
-`references/article-format.md` before step 3.
+Work in five steps. Read `references/wikidata.md` before step 1,
+`references/article-format.md` before step 3, and `references/quickstatements.md`
+before step 5.
 
 ## Step 1 — Read the Wikidata item
 
@@ -167,3 +170,46 @@ default, while keeping every proper name in its native form (e.g.
 the wiki's existing page titles exactly — including the legal form, as in
 `[[Amateurtheaterverband Niedersachsen e. V.]]`; a target that doesn't exist yet
 is a normal redlink, not a problem.
+
+## Step 5 — Suggest Wikidata enrichment statements
+
+Read `references/quickstatements.md` first. The research you did for the article
+usually surfaces facts the Wikidata item is **missing** — these are worth feeding
+back as a ready-to-run QuickStatements batch.
+
+1. Compare what you learned against the `get_statements` output from Step 1, and
+   collect every well-sourced fact the item does **not** already have. Prioritise:
+   - **inception (`P571`)** — the founding year (year precision unless an exact
+     date is solid);
+   - **alternative names** — as aliases (`Ade` / `Aen`), for official short forms,
+     former names, or common spellings;
+   - **social-media profiles** — Facebook (`P2013`), Instagram (`P2003`),
+     X (`P2002`), YouTube channel (`P2397`), Mastodon (`P4033`);
+   - **street address** — only if you know the group's registered seat, added as a
+     `located at street address (P6375)` **qualifier** of the existing
+     `headquarters location (P159)` statement (not a standalone claim, and not for
+     a mere performance venue).
+   The default property set and value formats are in the reference file.
+2. **Reference the factual claims, not the identifiers.** Inception and a street
+   address carry a reference (reference URL `S854` + retrieved `S813` at today's
+   date, from the same sources you cited). Social-media profile statements take
+   **no** reference, and aliases/labels cannot carry one — that is expected.
+3. Only include facts you actually found and that are not already present. Never
+   invent a handle, id, or date to fill a slot. **Do not add person-valued
+   statements** (founders, directors, members) — those people will not have their
+   own Wikidata items, so the value cannot be linked.
+4. Build the V1 command block (one line per statement, TAB-separated, QID repeated
+   on each line) and turn it into a batch URL by percent-encoding the commands onto
+   `https://qs-dev.toolforge.org/batch/new?v1=` — encode programmatically so dates
+   survive (a raw `+` must become `%2B`). See the reference file for the exact
+   method and a worked example.
+5. **Present both** the human-readable command block and the batch URL, and note
+   that the link opens a draft the user reviews and runs while logged in (it does
+   not auto-save). When file tools are available, also save the commands to a `.qs`
+   file beside the article.
+
+If your research turns up an interesting statement **type** that is not in the
+default set above (e.g. described at URL `P973`, a parent or member organisation,
+an authority-file identifier), propose it for the item *and ask the user whether
+that property should be added to this skill's default enrichment set* before
+treating it as standard. Person-valued facts stay out of scope.
